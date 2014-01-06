@@ -6,6 +6,7 @@ import System.Environment
 import System.IO
 import System.Directory
 import Control.Monad
+import System.Posix.Process
 
 defaultFile = "# Default TODO File:\n\
               \# Format: item_name - due_date - description\n\
@@ -16,6 +17,8 @@ diffTime due cur = (diffMinutes (fromMaybe cur ((parseDateTime "%m/%d/%Y") due))
 
 prettyPrint :: DateTime -> [String] -> String
 prettyPrint curTime (name : (dueDate : (desc : _)))
+    | (diffTime dueDate curTime) < 0
+        = "*** OverDue:                " ++ name ++ " - " ++ dueDate ++ " - " ++ desc
     | (diffTime dueDate curTime) < (60 * 24)
         = "*** Less then 24 hours for: " ++ name ++ " - " ++ dueDate ++ " - " ++ desc
     | otherwise = (take 28 (repeat ' ')) ++ name ++ " - " ++ dueDate ++ " - " ++ desc
@@ -34,6 +37,9 @@ main = do args <- getArgs
           fileExists <- doesFileExist "/Users/ivansoban/.todo"
           when (not fileExists) $  writeFile "/Users/ivansoban/.todo" defaultFile
           todo <- readFile "/Users/ivansoban/.todo"
-          if (args !! 0) == "-v"
-              then putStr (readTODO todo curTime)
-              else putStr ("Incorrect flag '" ++ (args !! 0) ++ "'")
+          case (args !! 0) of "-v" -> putStr (readTODO todo curTime)
+                              "-n" -> do pid <- forkProcess (executeFile "vim" True ["/Users/ivansoban/.todo"] Nothing)
+                                         status <- getProcessStatus True True pid
+                                         case status of Nothing -> error "Error waiting for editor."
+                                                        Just status -> print status
+                              otherwise -> putStr ("Incorrect flag '" ++ (args !! 0) ++ "'")

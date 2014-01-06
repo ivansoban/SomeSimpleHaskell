@@ -17,4 +17,4 @@ cabal-version:       >=1.8
 executable todo
   main-is:             todo.hs
 --  other-modules:
-  build-depends:       base ==4.6.*, directory ==1.2.*, split ==0.2.*, datetime ==0.2.*
+  build-depends:       base ==4.6.*, directory ==1.2.*, split ==0.2.*, datetime ==0.2.*, unix ==2.6.*
