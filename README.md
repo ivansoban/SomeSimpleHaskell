@@ -3,6 +3,11 @@
 This is a collection of short/simple programs and utilities written
 in Haskell.
 
+# Installation
+
+Most of these utilities are installed using the cabal build system. Any other requirements will be
+specified in the README of the utility in question.
+
 # TerminalTODO
 
 A simple command line TODO application. When install as directed, it will print TODO items
