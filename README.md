@@ -22,4 +22,4 @@ Given names and numbers, the calculator will print out each person's share.
 This little program will take a matrix from STDIN and row reduce it to Reduced Echelon Form
 for you!
 
-# More will we added as necessity dictates. . .
+More will we added as necessity dictates. . .

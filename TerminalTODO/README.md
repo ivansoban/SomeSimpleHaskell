@@ -6,7 +6,7 @@ A simple TODO application that prints your TODO items to the terminal whenever y
 
 Configuring and building is simple with cabal:
 
-`
+```bash
 # Step by step
 cabal configure
 cabal build
@@ -14,7 +14,7 @@ cabal install
 
 # Or
 cabal install
-`
+```
 
 After the above commands, you can view your TODO items and other info by running `todo`.
 
@@ -39,7 +39,7 @@ variable. It will fail if $EDITOR is not set.
 
 Within the editor you can add TODO items in the following format:
 
-`
+```bash
 # Comments start with hash marks
 Item Title|01/01/2014|This is a description! Finish descripti
-`
+```
