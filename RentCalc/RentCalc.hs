@@ -4,11 +4,10 @@ import System.Environment
 main = do args <- getArgs
           checkArgs args
           printContr (words (args !! 0)) (map read (words (args !! 1))) (words (args !! 2))
-          -- printContr ["Ivan","Katy","Tyler"] [1312.01,154.94,84.74,25.00] ["All", "Ivan","Ivan","Tyler"]
 
 checkArgs :: [String] -> IO ()
 checkArgs args
-    | ((length args) == 0) = do (putStr "./rentmoney 'Name1 Name2 Name3 . . .' 'Rent Expense1 Expense2 . . .' 'RentPayer Expense1Payer Expense2Payer . . .'")
+    | ((length args) == 0) = do (putStr "./RentCalc 'Name1 Name2 Name3 . . .' 'Rent Expense1 Expense2 . . .' 'RentPayer Expense1Payer Expense2Payer . . .'")
                                 exitFailure
     | otherwise = putStr ""
 
