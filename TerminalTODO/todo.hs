@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Maybe
+import Data.List
 import Data.List.Split
 import Data.DateTime
 import System.Environment
@@ -13,7 +14,8 @@ import System.Posix.Types
 
 instructions = "Usage: todo -(n|v)\n\
                \       -n -> Opens editor to manage todo list\n\
-               \       -v -> View todo listm due dates, and descriptions"
+               \       -v -> View todo listm due dates, and descriptions\n\
+               \       -e -> Erase all overdue items"
 
 defaultFile = "# Default TODO File:\n\
               \# Format: item_name - due_date - description\n\
@@ -39,6 +41,12 @@ readTODO todoContents time = (foldr (\l r -> l ++ "\n" ++ r) ""
                                                  (map words
                                                      (lines todoContents)))))))
 
+writeTODO :: String -> DateTime -> String
+writeTODO todoContents time = (intercalate "\n"
+                                  (map (intercalate "|")
+                                      (filter (\(name : (dueDate : (desc : _))) -> (name !! 0) == '#' || (diffTime dueDate time) > 0)
+                                          (map (splitOn "|")
+                                              (lines todoContents)))))
 
 main = do args <- getArgs
           curTime <- getCurrentTime
@@ -57,5 +65,7 @@ main = do args <- getArgs
                                                                       case status of Nothing -> error "Error waiting for editor."
                                                                                      Just status -> print status
                               "--help" -> putStr instructions
+                              "-e" -> do let newSchedule = writeTODO todo curTime
+                                         length newSchedule `seq` (writeFile todoFile newSchedule)
                               otherwise -> do putStr ("Incorrect flag '" ++ (args !! 0) ++ "'\n")
                                               putStr instructions
