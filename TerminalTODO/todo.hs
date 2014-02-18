@@ -21,30 +21,56 @@ defaultFile = "# Default TODO File:\n\
               \# Format: item_name - due_date - description\n\
               \# TODO_Item - 12/1/2014 - Item description"
 
-diffTime :: String -> DateTime -> Integer
-diffTime due cur = (diffMinutes (fromMaybe cur ((parseDateTime "%m/%d/%Y") due)) cur)
+diffTime :: String -> DateTime -> Maybe Integer
+diffTime due cur = case (parseDateTime "%m/%d/%Y" due) of
+                       Just dueTime -> Just (diffMinutes dueTime cur)
+                       Nothing      -> Nothing
+
+diffTime' :: String -> String -> Maybe Integer
+diffTime' t1 t2 = case (parseDateTime "%m/%d/%Y" t1) of
+                      Just parsed1 -> case (parseDateTime "%m/%d/%Y" t2) of
+                                          Just parsed2 -> Just (diffMinutes parsed1 parsed2)
+                                          Nothing      -> Nothing
+                      Nothing      -> Nothing
+
+isValidDate :: String -> Bool
+isValidDate d = case (parseDateTime "%m/%d/%Y" d) of
+                    Just dueTime -> True
+                    Nothing      -> False
+
+dateCompare :: String -> String -> Ordering
+dateCompare d1 d2 = case (diffTime' d1 d2) of
+                        Just diff -> if diff > 0
+                                         then GT
+                                         else LT
+                        Nothing   -> if not (isValidDate d1) && not (isValidDate d2)
+                                         then EQ
+                                         else if not (isValidDate d1)
+                                                  then LT
+                                                  else GT
 
 prettyPrint :: DateTime -> [String] -> String
 prettyPrint curTime (name : (dueDate : (desc : _)))
-    | (diffTime dueDate curTime) < 0
+    | (isNothing (diffTime dueDate curTime))
+        = (take 28 (repeat ' ')) ++ "Error in time formatting."
+    | fromJust (diffTime dueDate curTime) < 0
         = "*** OverDue:                " ++ name ++ " - " ++ dueDate ++ " - " ++ desc
-    | (diffTime dueDate curTime) < (60 * 24)
+    | fromJust (diffTime dueDate curTime) < (60 * 24)
         = "*** Less then 24 hours for: " ++ name ++ " - " ++ dueDate ++ " - " ++ desc
     | otherwise = (take 28 (repeat ' ')) ++ name ++ " - " ++ dueDate ++ " - " ++ desc
 
 readTODO :: String -> DateTime -> String
 readTODO todoContents time = (foldr (\l r -> l ++ "\n" ++ r) ""
                                  (map (prettyPrint time)
-                                     (map (splitOn "|")
-                                         (map unwords
-                                             (filter (\l -> ((l !! 0) !! 0) /= '#')
-                                                 (map words
-                                                     (lines todoContents)))))))
+                                     (sortBy (\(_ : (dueDate1 : (_ : _))) (_ : (dueDate2 : (_ : _))) -> dateCompare dueDate1 dueDate2)
+                                         (map (splitOn "|")
+                                             (filter (\l -> (l !! 0) /= '#')
+                                                 (lines todoContents))))))
 
 writeTODO :: String -> DateTime -> String
 writeTODO todoContents time = (intercalate "\n"
                                   (map (intercalate "|")
-                                      (filter (\(name : (dueDate : (desc : _))) -> (name !! 0) == '#' || (diffTime dueDate time) > 0)
+                                      (filter (\(name : (dueDate : (desc : _))) -> (name !! 0) == '#' || ((isJust (diffTime dueDate time)) && (fromJust (diffTime dueDate time) > 0)))
                                           (map (splitOn "|")
                                               (lines todoContents)))))
 
